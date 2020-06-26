@@ -1,0 +1,14 @@
+T__0=1
+T__1=2
+T__2=3
+NL=4
+WS=5
+HTML_TAG_IN=6
+HTML_TAG_OUT=7
+COLOR=8
+HEADER=9
+STYLE=10
+WORD=11
+'('=1
+' , '=2
+')'=3
