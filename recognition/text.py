@@ -9,6 +9,7 @@ from tensorflow.keras.constraints import MaxNorm
 from tensorflow.keras.mixed_precision import experimental as mixed_precision
 
 from recognition.dataunpack import DataUnpack
+from enum import Enum
 
 import os
 import numpy as np
@@ -51,9 +52,16 @@ class FullGatedConv2D(Conv2D):
         config.update({"gated_filters": self.gated_filters})
         return config
 
+class Arch(Enum):
+    Base = 1
+    Q_Base = 2
+    Octave = 3
+    Q_Octave = 4
+    Depthwise = 5
+    Q_Depthwise = 6
 
 class RecognitionNet:
-    """A class"""
+    """Class representing the neural network used for recognizing word images"""
     
     MODEL_PATH = pkg_resources.files("recognition.data").joinpath("text_weights/crnn_model_1e_weights.ckpt")  # pretrained model
     OBJECTS = {"FullGatedConv2D": FullGatedConv2D}
@@ -148,7 +156,7 @@ class RecognitionNet:
         
     @staticmethod
     def ctc_loss_lambda_func(y_true, y_pred):
-        """Function for computing the CTC loss (also known as WER)."""
+        """Function for computing the CTC loss"""
         if len(y_true.shape) > 2:
             y_true = tf.squeeze(y_true)
 
@@ -193,8 +201,13 @@ class RecognitionNet:
 
         Parameters
         ----------
-            arch: str
-                One of "base" or "octave".
+            arch: Arch
+                Base: Uses the default configuration
+                Octave: Applies octave convolutions
+                Depthwise: Applies depthwise convolutions
+
+                If a "Q_" is added before any name, then the network is quantized
+                after training (e.g. Q_Base is a quantized network with default config)
             
         """
         policy = mixed_precision.Policy('mixed_float16')
