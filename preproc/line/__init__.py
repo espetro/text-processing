@@ -1,4 +1,4 @@
 __package__ = None
 
 from .deslant import Deslanter
-from .segmentation import LineSegmentation
+from .line import LineSegmentation, SearchAlg
