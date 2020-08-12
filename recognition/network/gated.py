@@ -9,7 +9,7 @@ from typing import Tuple
 from .base import BaseModel
 from .layers import FullGatedConv2D
 
-def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_fullgconv=False, dtype="float32"):
+def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_fullgconv=False):
     cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, padding="same", kernel_initializer="he_uniform")
         (input_layer)
         
@@ -28,10 +28,8 @@ def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_ful
 class GatedModel(BaseModel):
     """Represents a network graph that uses Full Gated 2D Convolutions."""
 
-    @staticmethod
-    def get_layers(input_size: Tuple[int, int, int]) -> (Tensor, Tensor):
-        """Builds the network graph and returns its input and output layers"""
-        input_data = Input(name="input", shape=input_size)
+    def get_layers(self) -> (Tensor, Tensor):
+        input_data = Input(name="input", shape=self.input_size)
 
         cnn = ConvLayer(input_data, 16, [(3,3), (3,3)], (2,2), add_dropout=False, add_fullgconv=True)
 

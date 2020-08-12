@@ -23,7 +23,7 @@ class BaseModel:
     
     If a new model needs to be implemented, it can use BaseModel as parent class,
     overriding the following methods:
-        - get_layers (static method)
+        - get_layers
     
     If the new model uses a different default optimizer, just pass it:
         super().__init__(optimizer=my_new_default_optimizer)
@@ -32,7 +32,9 @@ class BaseModel:
     """
 
     def __init__(self, input_size: Tuple[int, int, int], optimizer=None):
-        _in, _out = self.get_layers(input_size)
+        self.input_size = input_size
+
+        _in, _out = self.get_layers()
 
         optimizer = optimizer or RMSprop(learning_rate=5e-4)
         model = Model(inputs=_in, outputs=_out)
@@ -68,7 +70,32 @@ class BaseModel:
 
         return loss
 
-    @staticmethod
-    def get_layers(input_size: Tuple[int, int, int]) -> (Tensor, Tensor):
+    def get_layers(self) -> (Tensor, Tensor):
         """Builds the network graph and returns its input and output layers"""
-        pass
+        input_data = Input(name="input", shape=self.input_size)
+
+        cnn = ConvLayer(input_data, 16, [(3,3), (3,3)], (2,2), add_dropout=False, add_fullgconv=True)
+
+        cnn = ConvLayer(cnn, 32, [(3,3), (3,3)], (1,1), add_dropout=False, add_fullgconv=True)
+
+        cnn = ConvLayer(cnn, 40, [(2,4), (3,3)], (2,4), add_dropout=True, add_fullgconv=True)
+        cnn = ConvLayer(cnn, 48, [(3,3), (3,3)], (1,1), add_dropout=True, add_fullgconv=True)
+        cnn = ConvLayer(cnn, 56, [(2,4), (3,3)], (2,4), add_dropout=True, add_fullgconv=True)
+
+        cnn = ConvLayer(cnn, 64, [(3,3), (None, None)], (1,1), add_dropout=False, add_fullgconv=False)
+
+        cnn = MaxPooling2D(pool_size=(1,2), strides=(1,2), padding="valid")(cnn)
+
+        shape = cnn.get_shape()
+        nb_units = shape[2] * shape[3]
+
+        bgru = Reshape((shape[1], nb_units))(cnn)
+
+        bgru = Bidirectional(GRU(units=nb_units, return_sequences=True, dropout=0.5))(bgru)
+        bgru = Dense(units=nb_units * 2)(bgru)
+
+        bgru = Bidirectional(GRU(units=nb_units, return_sequences=True, dropout=0.5))(bgru)
+        output_data = Dense(units=self.model_outputs)(bgru)
+        output_data = Activation("softmax", dtype="float32")(output_data)
+
+        return input_data, output_data
