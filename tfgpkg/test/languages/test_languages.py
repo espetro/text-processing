@@ -1,4 +1,12 @@
 """
+`tfgpkg.languages` contains the following functionalities:
+    * The MinidownColor language spec, which has:
+        1. Paragraphs, that can be bold or emphasized
+        2. Headers, with levels 1-6
+        3. Both headers and paragraphs can be coloured
+    * A lexer and parser for the mentioned spec
+    * A custom input and error handler for transforming MinidownColor input into HTML5 output
+
 Test the following scenarios in `tfgpkg.languages`:
 
 Scenario: Given an empty input, raise an SyntaxError
@@ -26,7 +34,7 @@ Scenario: Given a valid set of sentences whose first sentence has a leading '#' 
     a <h1>..</h1> tag followed by other HTML tags. This set of sentence must contain colors different from black, and
     these must be properly reflected in the HTML output as <span>..</span> tags.
 
-All scenarios must deal with UTF-8 strings. Available colors are listed at _________.
+All scenarios must deal with UTF-8 strings. Available colors are listed at `tfgpkg.recognition.ColorGroup`.
 """
 
 from tfgpkg.languages import LanguageTransformer, HTMLMinidownColorListener
@@ -41,12 +49,7 @@ def read_from(fpath=None, text=None, out=None):
 
 def extract_words(lines):
     """Given a valid MinidownColor UTF-8 string, extract the words"""
-    output = ""
-    for line in lines:
-        words = [w.strip("(").strip("$").strip("@") for w in line.split(" ") if "(" in w]
-        output += " ".join(words) + "\n"
-
-    return output[:-1]  # drop the last ''
+    return [[w.strip("(").strip("$").strip("@") for w in line.split(" ") if "(" in w] for line in lines]
 
 HTML = HTMLMinidownColorListener.TAGS
 
