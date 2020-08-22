@@ -16,7 +16,7 @@ class ExceptionListener(ErrorListener):
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         print(e, file=sys.stderr)
-        raise Exception(f"ERROR: when parsing line {line} column {column}: {msg}\n")
+        raise SyntaxError(f"Invalid input when parsing line {line} column {column}: {msg}\n")
 
 
 class LanguageTransformer:

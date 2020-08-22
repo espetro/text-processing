@@ -15,6 +15,17 @@ class HTMLMinidownColorListener(MinidownColorListener):
         output: File object
             A writable file object
     """
+    TAGS = {
+        "doc_start": "\ufeff<html><head><title>Result</title><meta charset='UTF-8'/></head><body>",
+        "p_start": "<p>",
+        "p_end": "</p>",
+        "em_start": "<em>",
+        "em_end": "</em>",
+        "bold_start": "<strong>",
+        "bold_end": "</strong>",
+        "doc_end": "</body></html>"
+    }
+
     def __init__(self, output):
         self.output = output
         self.output.write(u'\ufeff')  # encodes the file as UTF-8
@@ -54,7 +65,7 @@ class HTMLMinidownColorListener(MinidownColorListener):
         prefix_style, suffix_style = HTMLMinidownColorListener.get_styles(ctx)
         colors_tag1, colors_tag2 = HTMLMinidownColorListener.get_colors(ctx)
 
-        self.output.write(f"{prefix_style}{colors_tag1}{word}{colors_tag2}{suffix_style}")
+        self.output.write(f"{prefix_style}{colors_tag1}{word}{colors_tag2}{suffix_style} ")
 
     @staticmethod
     def get_styles(ctx:MinidownColorParser.WordContext):

@@ -61,7 +61,7 @@ HTML_TAG_OUT: '<'[bi]'/>';
 COLOR: 'black' | 'blue' | 'brown' | 'green' | 'maroon' | 'mustard' | 'orange' | 'pink' | 'purple' | 'red' | 'yellow' | 'None';
 HEADER: '#'+;
 STYLE: [$@];
-WORD: [\p{InLatin_1_Supplement}a-zA-Z0-9_.,:\-]+;
+WORD: [\p{InLatin_1_Supplement}a-zA-Z0-9_.,!:\-]+;
 
 /* RESOURCES FOR UNDERSTANDING ANTLR4
  *   https://www.youtube.com/watch?v=pa8qG0I10_I
