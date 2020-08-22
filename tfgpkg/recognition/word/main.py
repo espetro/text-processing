@@ -1,7 +1,7 @@
 from tensorflow.keras.callbacks import CSVLogger, TensorBoard, ModelCheckpoint
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-from recognition.dataunpack import DataUnpack
+from ..dataunpack import DataUnpack
 from os.path import expanduser
 from enum import Enum
 
@@ -30,6 +30,7 @@ def set_callbacks():
     log_file = {
         "csv": os.path.join(logdir, "epochs.log"),
         "ckpt": os.path.join(self.logdir, "checkpoint.params")
+    }
 
     callbacks = [
         CSVLogger(filename=log_file["csv"], separator=";", append=True),
@@ -74,7 +75,7 @@ class RecognitionNet:
     """
     
     # pretrained model
-    MODEL_PATH = pkg_resources.files("recognition.data").joinpath("text_weights/crnn_model_1e_weights.ckpt")
+    MODEL_PATH = "" # pkg_resources.files("recognition.data").joinpath("text_weights/crnn_model_1e_weights.ckpt")
 
     ASCII_CHAR = " !\"#$%&'()*+,-.0123456789:;<>@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     LATIN_CHAR = " !\"#$%&'()*+,-.0123456789:;<>@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚëËïÏüÜñÑçÇâÂêÊîÎôÔûÛàÀèÈùÙ"

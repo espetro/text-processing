@@ -16,8 +16,10 @@ Test the following scenarios in `tfgpkg.recognition`. Most scenarios contain qua
 must deal with UTF-8 strings. Available colors are listed at `tfgpkg.recognition.ColorGroup`.
 """
 
-# from tfgpkg.languages import LanguageTransformer, HTMLMinidownColorListener
-from io import StringIO
+from io import BytesIO
+from tempfile import NamedTemporaryFile
+
+import tfgpkg.recognition as rec
 import pkg_resources
 import pytest
 import os

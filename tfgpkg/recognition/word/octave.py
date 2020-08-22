@@ -1,23 +1,30 @@
-from tensorflow.keras.layers import BatchNormalization, PReLU, SeparableConv2D
+from tensorflow.keras.layers import BatchNormalization, PReLU
 from tensorflow.keras.layers import Activation, MaxPooling2D, Reshape
-from tensorflow.keras.layers import Input, Bidirectional, LSTM, Dense
+from tensorflow.keras.layers import Input, Bidirectional, GRU, Dense
 
 from tensorflow.python.framework.ops import Tensor
 from typing import Tuple
 
 from .base import BaseModel
+from .layers import OctConv2D
 
-def ConvLayer(input_layer, filters, kernel, strides):
+def ConvLayer(input_layer, filters, kernel, strides, alpha=0):
+    """Creates a 2D Octave Convolutional stack: Input -> OctaveConv2D -> PReLu -> BatchNormalization -> Output.
+
+    If alpha is 0, only the high channel is computed. If alpha is 1, only the low channel is computed.
+    """
     params = { "kernel_initializer": "he_uniform"}
 
-    cnn = SeparableConv2D(filters, kernel, strides, "same", **params)(input_layer)
-    cnn = PReLU(shared_axes=[1,2])(cnn)
-    cnn = BatchNormalization()(cnn)
+    high, low = OctConv2D(filters, alpha, kernel, strides, "same" **params)(input_layer)
     
-    return cnn
+    high = BatchNormalization()(high)
+    low = BatchNormalization()(low)
+    
+    return = PReLU(shared_axes=[1,2])([high, low])
 
-class DepthwiseModel(BaseModel):
-    """Represents a network graph that uses Depthwise 2D Convolutions."""
+
+class OctaveModel(BaseModel):
+    """Represents a network graph that uses Octave 2D Convolutions"""
 
     def get_layers(self) -> (Tensor, Tensor):
         input_data = Input(name="input", shape=self.input_size)

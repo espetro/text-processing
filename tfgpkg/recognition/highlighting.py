@@ -4,7 +4,7 @@ from tensorflow.keras.layers import SeparableConv2D
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras.models import Sequential
-from preproc import Quantize
+from ..preproc.word import Quantize
 
 import matplotlib.pyplot as plt
 import skimage.exposure as exp

@@ -16,8 +16,7 @@
 Test the following scenarios in `tfgpkg.preproc`. Most scenarios contain qualitative tests.
 """
 
-# from tfgpkg.languages import LanguageTransformer, HTMLMinidownColorListener
-from io import StringIO
+import tfgpkg.preproc as preproc
 import pkg_resources
 import pytest
 import os

@@ -1,5 +1,5 @@
 from sklearn.preprocessing import LabelEncoder
-from recognition.colorthief import ColorThief
+from .palette import ColorThief
 from PIL import Image
 
 import numpy as np

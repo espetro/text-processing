@@ -1,4 +1,4 @@
-from recognition import StringVectorizer
+from .word import StringVectorizer
 from pandas import DataFrame as DF
 from tqdm import tqdm
 

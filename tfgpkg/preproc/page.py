@@ -1,4 +1,6 @@
-from preproc import Deslanter, LineSegmentation, WordSegmentation
+from .line import Deslanter, LineSegmentation
+from .word import WordSegmentation
+
 from typing import Tuple, Union
 from io import BufferedIOBase
 from numpy import ndarray

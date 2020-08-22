@@ -1,4 +1,4 @@
-from preproc import RobustBinarize
+from ..preproc.binarize import IlluminationBinarizer
 from numpy import ndarray
 
 import pandas as pd
@@ -82,7 +82,7 @@ class DataUnpack:
                 image = DataUnpack.resize(sample_name, image, target_size, aspect_ratio)
 
             # Remove cursive style (WORKS BADLY FOR 'train_spa/w02_bw_22' and takes so much time)
-            # image = RobustBinarize.remove_cursive_style(image)
+            # image = IlluminationBinarizer.remove_cursive_style(image)
 
             # transpose the image (as numpy uses (h,w) shapes and tf uses (w, h) shapes)
             image = image.transpose()

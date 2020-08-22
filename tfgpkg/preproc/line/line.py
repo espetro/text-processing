@@ -1,4 +1,4 @@
-from preproc.line.search import AStar, JumpPoint
+from .search import AStar, JumpPoint
 from scipy.signal import find_peaks
 from numpy import ndarray
 from tqdm import tqdm
