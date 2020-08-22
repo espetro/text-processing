@@ -20,7 +20,7 @@ setup(
     author="Quim Terrasa",
     author_email="quino.terrasa+dev@gmail.com",
     description="A module for storing util functions for my bachelor thesis.",
-    py_modules=["preproc", "textRecognition", "languages"],
+    py_modules=["tfgpkg"],
     install_requires=[
         "tensorflow == 2.2.0",
         "numpy",
@@ -28,7 +28,7 @@ setup(
         "opencv-python",
         "numba",
         "Pillow",
-        "antlr4-python3-runtime",
+        "antlr4-python3-runtime == 4.7.2",
         "h5py",
         "pandas",
         "tqdm",
@@ -36,7 +36,7 @@ setup(
         "scikit-learn",
         "importlib_resources",
         "mxnet",
-        "jamspell",
+        # "jamspell",
         "pyspellchecker",
         "langdetect"
     ],

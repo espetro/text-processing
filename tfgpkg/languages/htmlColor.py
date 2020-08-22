@@ -3,8 +3,8 @@ import sys
 import re
 
 from antlr4 import *
-from languages.MinidownColorParser import MinidownColorParser
-from languages.MinidownColorListener import MinidownColorListener
+from tfgpkg.languages.MinidownColorParser import MinidownColorParser
+from tfgpkg.languages.MinidownColorListener import MinidownColorListener
 
 class HTMLMinidownColorListener(MinidownColorListener):
     """
@@ -20,16 +20,14 @@ class HTMLMinidownColorListener(MinidownColorListener):
         self.output.write(u'\ufeff')  # encodes the file as UTF-8
 
     def enterPage(self, ctx:MinidownColorParser.PageContext):
-        self.output.write("<html>\n\r<head><title>Result</title><meta charset='UTF-8'/></head>\n<body>")
-        pass
+        self.output.write("<html><head><title>Result</title><meta charset='UTF-8'/></head><body>")
 
     def exitPage(self, ctx:MinidownColorParser.PageContext):
-        self.output.write("\n</body>\n</html>\n")
-        pass
+        self.output.write("</body></html>")
 
     def enterHeader(self, ctx:MinidownColorParser.HeaderContext):
         levels = len(ctx.level.text)
-        self.output.write(f"\n<h{levels}>\n\t")
+        self.output.write(f"<h{levels}>")
 
     def exitHeader(self, ctx:MinidownColorParser.HeaderContext):
         """
@@ -43,20 +41,20 @@ class HTMLMinidownColorListener(MinidownColorListener):
                         Use ctx.value.getText() or ctx.text().getText() to get str
         """
         levels = len(ctx.level.text)
-        self.output.write(f"\n</h{levels}>")
+        self.output.write(f"</h{levels}>")
 
     def enterParagraph(self, ctx:MinidownColorParser.ParagraphContext):
-        self.output.write("\n<p>\n\t")
+        self.output.write("<p>")
 
     def exitParagraph(self, ctx:MinidownColorParser.ParagraphContext):
-        self.output.write("\n</p>")
+        self.output.write("</p>")
 
     def exitWord(self, ctx:MinidownColorParser.WordContext):       
         word = ctx.value.text
         prefix_style, suffix_style = HTMLMinidownColorListener.get_styles(ctx)
         colors_tag1, colors_tag2 = HTMLMinidownColorListener.get_colors(ctx)
 
-        self.output.write(f"{prefix_style}{colors_tag1}{word}{colors_tag2}{suffix_style} ")
+        self.output.write(f"{prefix_style}{colors_tag1}{word}{colors_tag2}{suffix_style}")
 
     @staticmethod
     def get_styles(ctx:MinidownColorParser.WordContext):
