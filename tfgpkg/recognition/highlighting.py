@@ -17,7 +17,7 @@ class HighlightDetector:
     
     NUM_CLASSES = 2
     TARGET_SIZE = (150,150, 3)
-    MODEL_PATH = pkg_resources.resource_filename("tfgpkg.recognition.data", "highlight_model_mini_45e_64bz_weights.ckpt")
+    MODEL_PATH = "" # pkg_resources.resource_filename("tfgpkg.recognition.data", "highlight_model_mini_45e_64bz_weights.ckpt")
 
     def __init__(self, target_size=None, epochs=1):
         self.input_size = target_size or HighlightDetector.TARGET_SIZE

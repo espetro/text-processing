@@ -35,6 +35,7 @@ setup(
         "scikit-image",
         "scikit-learn",
         "importlib_resources",
+        "keras_octave_conv",
         # "mxnet",
         # "jamspell",
         "pyspellchecker",

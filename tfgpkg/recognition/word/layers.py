@@ -31,7 +31,7 @@ class FullGatedConv2D(Conv2D):
         return config
 
 
-class OctConv2D(Layer):
+class OctConv2D(Conv2D):
     """2D Octave Convolution implementation in Tensorflow.
 
     Source:

@@ -9,9 +9,9 @@ from .base import BaseModel
 
 def SepConvStack(input_layer, filters, kernel, strides):
     """Retrieves the CNN stack: Input -> SeparableConv2D -> PReLu -> BatchNorm -> Output"""
-    params = { "kernel_initializer": "he_uniform"}
+    params = { "padding": "same", "kernel_initializer": "he_uniform"}
 
-    cnn = SeparableConv2D(filters, kernel, strides, "same", **params)(input_layer)
+    cnn = SeparableConv2D(filters, kernel, strides, **params)(input_layer)
     cnn = PReLU(shared_axes=[1,2])(cnn)
     cnn = BatchNormalization()(cnn)
     
@@ -23,15 +23,14 @@ class DepthwiseModel(BaseModel):
     def get_layers(self) -> (Tensor, Tensor):
         input_data = Input(name="input", shape=self.input_size)
 
-        cnn = SepConvStack(input_data, 16, (3,3), (2,2), add_dropout=False, add_fullgconv=True)
+        cnn = SepConvStack(input_data, 16, (3,3), (2,2))
+        cnn = SepConvStack(cnn, 32, (3,3), (1,1))
 
-        cnn = SepConvStack(cnn, 32, (3,3), (1,1), add_dropout=False, add_fullgconv=True)
+        cnn = SepConvStack(cnn, 40, (2,4), (2,4))
+        cnn = SepConvStack(cnn, 48, (3,3), (1,1))
+        cnn = SepConvStack(cnn, 56, (2,4), (2,4))
 
-        cnn = SepConvStack(cnn, 40, (2,4), (2,4), add_dropout=True, add_fullgconv=True)
-        cnn = SepConvStack(cnn, 48, (3,3), (1,1), add_dropout=True, add_fullgconv=True)
-        cnn = SepConvStack(cnn, 56, (2,4), (2,4), add_dropout=True, add_fullgconv=True)
-
-        cnn = SepConvStack(cnn, 64, (3,3), (1,1), add_dropout=False, add_fullgconv=False)
+        cnn = SepConvStack(cnn, 64, (3,3), (1,1))
 
         cnn = MaxPooling2D(pool_size=(1,2), strides=(1,2), padding="valid")(cnn)
 
