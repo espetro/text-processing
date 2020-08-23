@@ -1,26 +1,14 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.layers import Dropout, BatchNormalization, LeakyReLU
-from tensorflow.keras.layers import Input, MaxPooling2D, Conv2D, Reshape
-from tensorflow.keras.layers import Bidirectional, LSTM, Dense
+from tensorflow.keras.optimizers import Adam
 
 from tensorflow.python.framework.ops import Tensor
 from typing import Tuple
 from numpy import ndarray
 
-def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_fullgconv=False, dtype="float32"):
-    opts = dict(padding="same", kernel_initializer="he_uniform")
-
-    cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, **opts)(input_layer)
-    cnn = PReLU(shared_axes=[1,2])(cnn)
-    cnn = BatchNormalization()(cnn)
-
-    return cnn
-
 # ===============================
 
 class BaseModel:
-    """Represents a Keras network graph with common 2D convolutions.
+    """Represents a Keras network graph.
     
     If a new model needs to be implemented, it can use BaseModel as parent class,
     overriding the following methods:
@@ -37,7 +25,7 @@ class BaseModel:
 
         _in, _out = self.get_layers()
 
-        optimizer = optimizer or RMSprop(learning_rate=5e-4)
+        optimizer = optimizer or Adam()
         model = Model(inputs=_in, outputs=_out)
 
         model.compile(optimizer=optimizer, loss=BaseModel.ctc_loss_lambda_func)
@@ -72,30 +60,4 @@ class BaseModel:
 
     def get_layers(self) -> (Tensor, Tensor):
         """Builds the network graph and returns its input and output layers"""
-        input_data = Input(name="input", shape=self.input_size)
-
-        cnn = ConvLayer(input_data, 16, [(3,3), (3,3)], (2,2), add_dropout=False, add_fullgconv=True)
-
-        cnn = ConvLayer(cnn, 32, [(3,3), (3,3)], (1,1), add_dropout=False, add_fullgconv=True)
-
-        cnn = ConvLayer(cnn, 40, [(2,4), (3,3)], (2,4), add_dropout=True, add_fullgconv=True)
-        cnn = ConvLayer(cnn, 48, [(3,3), (3,3)], (1,1), add_dropout=True, add_fullgconv=True)
-        cnn = ConvLayer(cnn, 56, [(2,4), (3,3)], (2,4), add_dropout=True, add_fullgconv=True)
-
-        cnn = ConvLayer(cnn, 64, [(3,3), (None, None)], (1,1), add_dropout=False, add_fullgconv=False)
-
-        cnn = MaxPooling2D(pool_size=(1,2), strides=(1,2), padding="valid")(cnn)
-
-        shape = cnn.get_shape()
-        nb_units = shape[2] * shape[3]
-
-        bgru = Reshape((shape[1], nb_units))(cnn)
-
-        bgru = Bidirectional(GRU(units=nb_units, return_sequences=True, dropout=0.5))(bgru)
-        bgru = Dense(units=nb_units * 2)(bgru)
-
-        bgru = Bidirectional(GRU(units=nb_units, return_sequences=True, dropout=0.5))(bgru)
-        output_data = Dense(units=self.model_outputs)(bgru)
-        output_data = Activation("softmax", dtype="float32")(output_data)
-
-        return input_data, output_data
+        pass
