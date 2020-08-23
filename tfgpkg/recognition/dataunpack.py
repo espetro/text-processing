@@ -12,10 +12,10 @@ class DataUnpack:
     It works along with the TinyData class.
     
     Source:
-        https://github.com/arthurflor23/handwritten-text-recognition/blob/master/src/data/preproc.py
-        https://github.com/arthurflor23/handwritten-text-recognition/blob/master/src/data/generator.py
-        https://github.com/arthurflor23/handwritten-text-recognition/blob/master/src/data/evaluation.py
-        https://machinelearnings.co/deep-spelling-9ffef96a24f6#.2c9pu8nlm
+        @arthurflor23/handwritten-text-recognition @ data/preproc.py
+        @arthurflor23/handwritten-text-recognition @ data/generator.py
+        @arthurflor23/handwritten-text-recognition @ data/evaluation.py
+        machinelearnings /deep-spelling-9ffef96a24f6#.2c9pu8nlm
     """
     @staticmethod
     def imwrite(fpath, image, color=False):
@@ -32,8 +32,8 @@ class DataUnpack:
         image: numpy ndarray with shape (height, width) and 0 channels
 
         Source:
-            https://stackoverflow.com/questions/58248121/opencv-python-how-to-overlay-an-image-into-the-centre-of-another-image
-            https://stackoverflow.com/questions/44650888/resize-an-image-without-distortion-opencv
+            stackoverflow /questions/58248121/opencv-python-how-to-overlay-an-image-into-the-centre-of-another-image
+            stackoverflow /questions/44650888/resize-an-image-without-distortion-opencv
         """
         h, w = image.shape
         image_ratio = np.round(w / h, 2)
@@ -65,7 +65,13 @@ class DataUnpack:
 
     @staticmethod
     def unpack_set(set_name, dest_dir, file, color=False, target_size=None, aspect_ratio=None, max_word_length=34):
-        """Performs the unpacking step for each dataset split (train/test/validation)"""
+        """Performs the unpacking step for each dataset split (train/test/validation)
+        
+        Additionally, applies a pre-processing resizing step using 'aspect_ratio'. This allows to get a given target
+        size while not shrinking both width and height; in contrast, it adds white space in either dimension to keep the
+        image unstreched.
+
+        """
         vector_labels = [f"X{i}" for i in range(max_word_length)]
         columns = ["name", "label", "fname"] + vector_labels
         result = pd.DataFrame(columns=columns)
@@ -102,7 +108,11 @@ class DataUnpack:
 
     @staticmethod
     def load_set(set_name, file, target_size=None, aspect_ratio=None):
-        """Performs the unpacking step for each dataset split (train/test/validation). Images are restored as RGB."""
+        """Performs the unpacking step for each dataset split (train/test/validation).
+        
+        Images are restored as RGB. Additionally, the method returns a tuple containing all images as arrays, their
+        associated labels and the same labels as vectorized integer arrays.
+        """
         images, labels, vectors = [], [], []
 
         for sample_name in file[set_name]:
@@ -130,13 +140,9 @@ class DataUnpack:
         
         Parameters
         ----------
-            ...
-
             save_to_disk: bool, default False.
                 If True, saves the images and labels to disk (in .png and .csv formats). Then returns the .csv objects.
                 If False, loads the images and labels to numpy arrays, and returns them as objects.
-
-            ...
         """
         dataset_name = input_path.replace(".h5", "").split("/")[-1]
 

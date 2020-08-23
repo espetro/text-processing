@@ -21,7 +21,14 @@ class TinyData:
             return cv2.imread(fpath, cv2.IMREAD_GRAYSCALE)
         
     @staticmethod
-    def minify_set(compressed_file, subset_name, subset, x_label, y_label, name_label, source_dir, color=False, max_word_length=34):
+    def minify_set(compressed_file, subset_name, subset, x_label, y_label, name_label, source_dir, color=False,
+        max_word_length=34):
+        """Loads a set of images into memory and stores them in a HDF5 file.
+        
+        Additionally, for each word image, it generates a vectorized string, i.e. an integer-encoded vector of length
+        `max_word_length`, where each position is mapped to a char in `StringVectorizer.CHARSET` plus 1 (current total
+        chars is 119, and current max word length is 34).
+        """
         vectorizer = StringVectorizer(max_word_length)
 
         for _, row in tqdm(subset.iterrows()):

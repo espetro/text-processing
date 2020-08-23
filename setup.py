@@ -2,7 +2,7 @@
 TFG Packages
 ------------
 
-A module for storing util functions for my bachelor thesis.
+A package for keeping useful modules that I used in my bachelor thesis.
 
 Links
 -----
@@ -14,12 +14,12 @@ from setuptools import setup
 
 setup(
     name="tfgpkg",
-    version="0.0.1",
+    version="0.0.2",
     url="https://github.com/espetro/text-processing",
     license="BSD",
     author="Quim Terrasa",
     author_email="quino.terrasa+dev@gmail.com",
-    description="A module for storing util functions for my bachelor thesis.",
+    description="A package for keeping useful modules that I used in my bachelor thesis.",
     py_modules=["tfgpkg"],
     install_requires=[
         "tensorflow == 2.2.0",
@@ -35,7 +35,7 @@ setup(
         "scikit-image",
         "scikit-learn",
         "importlib_resources",
-        "mxnet",
+        # "mxnet",
         # "jamspell",
         "pyspellchecker",
         "langdetect"
@@ -46,6 +46,6 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 3.6"
+        "Programming Language :: Python :: 3.7"
     ]
 )
