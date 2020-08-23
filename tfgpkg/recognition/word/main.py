@@ -20,15 +20,13 @@ import importlib_resources as pkg_resources
 
 class Arch(Enum):
     """
-    Base: Applies common convolutions
     Octave: Applies octave convolutions
     Gated: Applies full gated convolutions
     Depthwise: Applies depthwise convolutions  
     """
-    Base = 1
-    Octave = 2
-    Depthwise = 3
-    Gated = 4
+    Octave = 1
+    Depthwise = 2
+    Gated = 3
 
 def set_callbacks(logdir, verbose=0, monitor="val_loss"):
     """Setup a list of Tensorflow Keras callbacks"""
@@ -87,7 +85,7 @@ class RecognitionNet:
     
     DECODER_CONFIG = { "greedy": False, "beam_width": 5, "top_paths": 1 }
 
-    def __init__(self, logdir=None, input_size=None, arch=Arch.Base,
+    def __init__(self, logdir=None, input_size=None, arch=Arch.Gated,
         shrink=False, charset=None, optimizer=None, decoder_conf=None, verbose=0):
 
         if input_size is None:
@@ -135,13 +133,13 @@ class RecognitionNet:
             arch: Arch          
         """
         if arch is Arch.Base or arch is None:
-            return BaseModel(self.input_size, optimizer).get_model()
+            return BaseModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Gated:
-            return GatedModel(self.input_size, optimizer).get_model()
+            return GatedModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Octave:
-            return OctaveModel(self.input_size, optimizer).get_model()
+            return OctaveModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Depthwise:
-            return DepthwiseModel(self.input_size, optimizer).get_model()
+            return DepthwiseModel(self.input_size, self.model_outputs, optimizer).get_model()
 
     def predict(self, x, batch_size=None, verbose=0, steps=1, callbacks=None, max_queue_size=10, workers=1,
         use_multiprocessing=False, ctc_decode=True):
@@ -154,9 +152,6 @@ class RecognitionNet:
         :param: See tensorflow.keras.Model.predict()
         :return: raw data on `ctc_decode=False` or CTC decode on `ctc_decode=True` (both with probabilities)
         """
-
-        self.model._make_predict_function()
-
         if verbose == 1:
             print("Model Predict")
 

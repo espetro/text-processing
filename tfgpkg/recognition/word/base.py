@@ -1,9 +1,11 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-
 from tensorflow.python.framework.ops import Tensor
 from typing import Tuple
 from numpy import ndarray
+
+import tensorflow as tf
+import tensorflow.keras.backend as K
 
 # ===============================
 
@@ -20,19 +22,19 @@ class BaseModel:
     You can also override the __init__ method.
     """
 
-    def __init__(self, input_size: Tuple[int, int, int], optimizer=None):
+    def __init__(self, input_size: Tuple[int, int, int], model_outputs, optimizer=None):
         self.input_size = input_size
-
-        _in, _out = self.get_layers()
-
-        optimizer = optimizer or Adam()
-        model = Model(inputs=_in, outputs=_out)
-
-        model.compile(optimizer=optimizer, loss=BaseModel.ctc_loss_lambda_func)
+        self.model_outputs = model_outputs
+        self.optimizer = optimizer or Adam()
 
     def get_model(self):
         """Returns the network's Keras model"""
-        return self.model
+        _in, _out = self.get_layers()
+ 
+        model = Model(inputs=_in, outputs=_out)
+        model.compile(optimizer=self.optimizer, loss=BaseModel.ctc_loss_lambda_func)
+
+        return model
 
     @staticmethod
     def ctc_loss_lambda_func(y_true: ndarray, y_pred: ndarray) -> float:
