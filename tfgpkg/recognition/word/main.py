@@ -2,6 +2,11 @@ from tensorflow.keras.callbacks import CSVLogger, TensorBoard, ModelCheckpoint
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 from ..dataunpack import DataUnpack
+from .base import BaseModel
+from .depthwise import DepthwiseModel
+from .octave import OctaveModel
+from .gated import GatedModel
+
 from os.path import expanduser
 from enum import Enum
 
@@ -25,11 +30,11 @@ class Arch(Enum):
     Depthwise = 3
     Gated = 4
 
-def set_callbacks():
+def set_callbacks(logdir, verbose=0, monitor="val_loss"):
     """Setup a list of Tensorflow Keras callbacks"""
     log_file = {
         "csv": os.path.join(logdir, "epochs.log"),
-        "ckpt": os.path.join(self.logdir, "checkpoint.params")
+        "ckpt": os.path.join(logdir, "checkpoint.params")
     }
 
     callbacks = [

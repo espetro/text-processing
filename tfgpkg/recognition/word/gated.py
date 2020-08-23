@@ -10,9 +10,9 @@ from .base import BaseModel
 from .layers import FullGatedConv2D
 
 def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_fullgconv=False):
-    cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, padding="same", kernel_initializer="he_uniform")
-        (input_layer)
-        
+    opts = dict(padding="same", kernel_initializer="he_uniform")
+
+    cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, **opts)(input_layer)    
     cnn = PReLU(shared_axes=[1,2])(cnn)
     cnn = BatchNormalization()(cnn)
 

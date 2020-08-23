@@ -20,7 +20,7 @@ def ConvLayer(input_layer, filters, kernel, strides, alpha=0):
     high = BatchNormalization()(high)
     low = BatchNormalization()(low)
     
-    return = PReLU(shared_axes=[1,2])([high, low])
+    return PReLU(shared_axes=[1,2])([high, low])
 
 
 class OctaveModel(BaseModel):

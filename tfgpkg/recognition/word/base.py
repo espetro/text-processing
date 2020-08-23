@@ -9,11 +9,12 @@ from typing import Tuple
 from numpy import ndarray
 
 def ConvLayer(input_layer, filters, kernels, strides, add_dropout=False, add_fullgconv=False, dtype="float32"):
-    cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, padding="same", kernel_initializer="he_uniform")
-        (input_layer)
-        
+    opts = dict(padding="same", kernel_initializer="he_uniform")
+
+    cnn = Conv2D(filters=filters, kernel_size=kernels[0], strides=strides, **opts)(input_layer)
     cnn = PReLU(shared_axes=[1,2])(cnn)
     cnn = BatchNormalization()(cnn)
+
     return cnn
 
 # ===============================
@@ -40,7 +41,6 @@ class BaseModel:
         model = Model(inputs=_in, outputs=_out)
 
         model.compile(optimizer=optimizer, loss=BaseModel.ctc_loss_lambda_func)
-        return model
 
     def get_model(self):
         """Returns the network's Keras model"""
