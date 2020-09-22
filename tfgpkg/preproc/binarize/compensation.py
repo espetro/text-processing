@@ -37,7 +37,7 @@ class IlluminationBinarizer:
             return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     @staticmethod
-    def illumination_compensation(image: ndarray, c:float=0.3, bl:int=260):
+    def illumination_compensation(image: ndarray, as_bin=False, upper_value=255, c:float=0.3, bl:int=260, debug=False):
         """Computes the illumination-compensated image for the given image.
         
         Parameters
@@ -49,6 +49,8 @@ class IlluminationBinarizer:
             bl: int, default 260.
                 Recommended values: [200..300]
                                 
+            debug: bool, default False
+                If True, runs Numba-compiled as usual Python functions
         Returns
         -------
             2D numpy array, the binarized result image
@@ -56,27 +58,48 @@ class IlluminationBinarizer:
         gray = IlluminationBinarizer.to_grayscale(image, from_rgb=True).astype(np.float32)
         height, width = gray.shape[:2]
 
-        # 1. Enhance contrast
-        cei = IlluminationBinarizer.enhance_contrast(image, gray, c)
+        if debug:
+            cei = IlluminationBinarizer.enhance_contrast.py_func(image, gray, c)
+            edges = IlluminationBinarizer.detect_edges(gray)
+            erosion = IlluminationBinarizer.locate_text(cei, edges)
+            compute_mat = np.array(cei)
+            IlluminationBinarizer.estimate_lightness_distr.py_func(compute_mat, height, width, erosion, cei)
+            mean_filter = 1 / 121 * np.ones((11,11), np.uint8)
+            ldi = cv2.filter2D(IlluminationBinarizer.minmax_scale.py_func(compute_mat), -1, mean_filter)
+            result = IlluminationBinarizer.compute_result.py_func(cei, erosion, ldi, bl).astype(np.uint8)
 
-        # 2. Edge detection
-        edges = IlluminationBinarizer.detect_edges(gray)
+            if as_bin:
+                thresh = cv2.adaptiveThreshold(result, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+                return IlluminationBinarizer.minmax_scale.py_func(thresh, upper_value).astype(np.uint8)
+            else:
+                return result
+        else:
+            # 1. Enhance contrast
+            cei = IlluminationBinarizer.enhance_contrast(image, gray, c)
 
-        # 3. Locate text
-        erosion = IlluminationBinarizer.locate_text(cei, edges)
+            # 2. Edge detection
+            edges = IlluminationBinarizer.detect_edges(gray)
 
-        # 4. Estimate lightness distribution
-        compute_mat = np.array(cei)
-        IlluminationBinarizer.estimate_lightness_distr(compute_mat, height, width, erosion, cei)
+            # 3. Locate text
+            erosion = IlluminationBinarizer.locate_text(cei, edges)
 
-        mean_filter = 1 / 121 * np.ones((11,11), np.uint8)
-        ldi = cv2.filter2D(
-            IlluminationBinarizer.minmax_scale(compute_mat), -1, mean_filter
-        )
+            # 4. Estimate lightness distribution
+            compute_mat = np.array(cei)
+            IlluminationBinarizer.estimate_lightness_distr(compute_mat, height, width, erosion, cei)
 
-        # 5. Compute result
-        result = IlluminationBinarizer.compute_result(cei, erosion, ldi, bl)
-        return result.astype(np.uint8)
+            mean_filter = 1 / 121 * np.ones((11,11), np.uint8)
+            ldi = cv2.filter2D(
+                IlluminationBinarizer.minmax_scale(compute_mat), -1, mean_filter
+            )
+
+            # 5. Compute result
+            result = IlluminationBinarizer.compute_result(cei, erosion, ldi, bl).astype(np.uint8)
+
+            if as_bin:
+                thresh = cv2.adaptiveThreshold(result, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+                return IlluminationBinarizer.minmax_scale(thresh, upper_value).astype(np.uint8)
+            else:
+                return result
 
     @staticmethod
     @nb.njit(cache=True)
@@ -121,12 +144,12 @@ class IlluminationBinarizer:
 
     @staticmethod
     @nb.njit(cache=True)
-    def minmax_scale(image: ndarray):
-        """Rescales an image to range 0..255"""
+    def minmax_scale(image: ndarray, upper_value=255):
+        """Rescales an image to range 0..upper_value"""
         s = np.max(image) - np.min(image) 
         res = image / s
         res -= np.min(res)
-        res *= 255
+        res *= upper_value
         return res
 
     @staticmethod
