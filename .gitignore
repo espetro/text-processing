@@ -2,6 +2,11 @@
 .vscode
 .directory
 
+# project-specific
+playground/datasets
+playground/trained_models
+playground/training_logs
+
 # ANTLR4-specific ignores
 .antlr
 tmp/

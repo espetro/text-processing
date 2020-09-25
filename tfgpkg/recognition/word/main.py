@@ -6,6 +6,8 @@ from .base import BaseModel
 from .depthwise import DepthwiseModel
 from .octave import OctaveModel
 from .gated import GatedModel
+from .baseline import BaselineModel
+
 from .metrics import cer, wer
 
 from os.path import expanduser
@@ -26,6 +28,7 @@ class Arch(Enum):
     Gated: Applies full gated convolutions
     Depthwise: Applies depthwise convolutions  
     """
+    Baseline = 0
     Octave = 1
     Depthwise = 2
     Gated = 3
@@ -46,11 +49,11 @@ def set_callbacks(logdir, verbose=0, monitor="val_loss"):
         ModelCheckpoint(filepath=log_file["ckpt"], monitor=monitor,
             save_best_only=True, save_weights_only=True, verbose=verbose),
 
-        EarlyStopping(monitor=monitor, min_delta=1e-8, patience=20,
+        EarlyStopping(monitor=monitor, min_delta=1e-4, patience=5,
             restore_best_weights=True, verbose=verbose),
 
         ReduceLROnPlateau(monitor=monitor, min_delta=1e-8, factor=0.2,
-            patience=15, verbose=verbose)
+            patience=10, verbose=verbose)
     ]
 
     return callbacks
@@ -78,6 +81,7 @@ class RecognitionNet:
         decoder_conf: Dict
         verbose: int
     """
+    INPUT_SIZE = (266, 64, 1)
     
     # pretrained model
     MODEL_PATH = "" # pkg_resources.files("recognition.data").joinpath("text_weights/crnn_model_1e_weights.ckpt")
@@ -113,7 +117,7 @@ class RecognitionNet:
         self.model.load_weights(fpath)
            
     @staticmethod
-    def compute_wer(true_labels: List[str], pred_labels: List[str]):
+    def compute_wer(true_label: List[str], pred_label: List[str]):
         """Computes the WER based on the Levenshtein distance"""
         # return wer(true_labels.join(" "), pred_labels.join(" "))
         num_true_strs, num_preds_strs = len(true_label) + 1, len(pred_label) + 1
@@ -157,6 +161,8 @@ class RecognitionNet:
         """
         if arch is None:
             raise ValueError(f"Wrong architecture value {arch} (only Arch. Octave, Depthwise or Gated are available)")
+        elif arch is Arch.Baseline:
+            return BaselineModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Gated:
             return GatedModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Octave:
@@ -244,4 +250,4 @@ class RecognitionNet:
 if __name__ == "__main__":
     net = RecognitionNet(".")
     net.load_chkpt()
-    net.summary()
+    net.model.summary()
