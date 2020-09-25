@@ -6,8 +6,10 @@ from .base import BaseModel
 from .depthwise import DepthwiseModel
 from .octave import OctaveModel
 from .gated import GatedModel
+from .metrics import cer, wer
 
 from os.path import expanduser
+from typing import List
 from enum import Enum
 
 import os
@@ -111,9 +113,10 @@ class RecognitionNet:
         self.model.load_weights(fpath)
            
     @staticmethod
-    def compute_wer(true_labels: str, pred_labels: str):
-        """Computes the WER based on the Levenshtein distance. It has O(nm) time ans space complexity."""
-        num_true_strs, num_preds_strs = len(true_labels) + 1, len(pred_labels) + 1
+    def compute_wer(true_labels: List[str], pred_labels: List[str]):
+        """Computes the WER based on the Levenshtein distance"""
+        # return wer(true_labels.join(" "), pred_labels.join(" "))
+        num_true_strs, num_preds_strs = len(true_label) + 1, len(pred_label) + 1
 
         mat = np.zeros((num_true_strs) * (num_preds_strs), dtype=np.uint8)
         mat = mat.reshape((num_true_strs, num_preds_strs))
@@ -127,7 +130,7 @@ class RecognitionNet:
         # computation
         for i in range(1, num_true_strs):
             for j in range(1, num_preds_strs):
-                if true_labels[i - 1] == pred_labels[j - 1]:
+                if true_label[i - 1] == pred_label[j - 1]:
                     mat[i, j] = mat[i - 1, j - 1]
                 else:
                     substitution = mat[i - 1, j - 1] + 1
@@ -135,17 +138,15 @@ class RecognitionNet:
                     deletion     = mat[i - 1, j] + 1
                     mat[i, j] = min(substitution, insertion, deletion)
 
-        return mat[len(true_labels), len(pred_labels)]
+        return mat[len(true_label), len(pred_label)]
 
     @staticmethod
-    def compute_cer(true_labels, pred_labels):
-        cer = []
-        for tru, prd in zip(true_labels, pred_labels):
-            dist = editdistance.eval(tru, prd)
-            word_length = max(len(tru), len(prd))
-            cer.append(dist / word_length)
-        
-        return np.mean(cer)
+    def compute_cer(true_label: str, pred_label: str):
+        """Computes the CER based on Levenshtein distance"""
+        # return np.mean([cer(tru, prd) for tru, prd in zip(true_labels, pred_labels)])
+        dist = editdistance.eval(true_label, pred_label)
+        word_length = max(len(true_label), len(pred_label))
+        return (dist / word_length)
 
     def _build_model(self, optimizer, arch: Arch):
         """Configures the HTR Model for training/predict.
