@@ -17,18 +17,42 @@ class HighlightDetector:
     
     NUM_CLASSES = 2
     TARGET_SIZE = (150,150, 3)
-    MODEL_PATH = "" # pkg_resources.resource_filename("tfgpkg.recognition.data", "highlight_model_mini_45e_64bz_weights.ckpt")
+    MODEL_PATH = pkg_resources.resource_filename("tfgpkg.recognition.data", "highlight_model_mini_45e_64bz_weights.ckpt")
 
     def __init__(self, target_size=None, epochs=1):
         self.input_size = target_size or HighlightDetector.TARGET_SIZE
 
-        self.net = KerasClassifier(
+        self.net: KerasClassifier = KerasClassifier(
             build_fn=HighlightDetector._build_model,
             input_size=self.input_size,
             epochs=1,
             batch_size=32,
             verbose=0
         )
+
+    def train(self, X_train, Y_train, epochs=30, plot=False):
+        training_results = self.net.fit(X_train, Y_train, verbose=1)
+        if plot:
+            HighlightDetector.plot_results(training_results)
+
+    def predict(self, X_test):
+        """"""
+        return self.net.model.predict_classes(X_test).flatten()
+
+    def cross_validate(self, X, Y, k=10, epochs=30, batch_sz=128):
+        kfold = StratifiedKFold(n_splits=k, shuffle=True)
+        results = cross_val_score(self.net, X, Y, cv=kfold)
+
+        print(f"Baseline: {(results.mean() * 100):.2f}% ({(results.std()*100):.2f}%)")
+
+    def load_model(self, fpath=None):
+        fpath = fpath or str(HighlightDetector.MODEL_PATH)
+
+        # initialize the network
+        dummyX, dummyY = np.zeros((1,150,150,3)), np.zeros((1))
+        _ = self.net.fit(dummyX, dummyY, verbose=0)
+
+        self.net.model.load_weights(fpath)
 
     @staticmethod    
     def minmax_scaler(arr):
@@ -92,27 +116,3 @@ class HighlightDetector:
         axes[1].set_title("Training Loss")
 
         plt.show()
-
-    def train(self, X_train, Y_train, epochs=30, plot=False):
-        training_results = self.net.fit(X_train, Y_train, verbose=1)
-        if plot:
-            HighlightDetector.plot_results(training_results)
-
-    def predict(self, X_test):
-        """"""
-        return self.net.model.predict_classes(X_test).flatten()
-
-    def cross_validate(self, X, Y, k=10, epochs=30, batch_sz=128):
-        kfold = StratifiedKFold(n_splits=k, shuffle=True)
-        results = cross_val_score(self.net, X, Y, cv=kfold)
-
-        print(f"Baseline: {(results.mean() * 100):.2f}% ({(results.std()*100):.2f}%)")
-
-    def load_weights(self, fpath=None):
-        fpath = fpath or str(HighlightDetector.MODEL_PATH)
-
-        # initialize the network
-        dummyX, dummyY = np.zeros((1,150,150,3)), np.zeros((1))
-        _ = self.net.fit(dummyX, dummyY, verbose=0)
-
-        self.net.model.load_weights(fpath)

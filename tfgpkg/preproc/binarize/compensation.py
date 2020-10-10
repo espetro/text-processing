@@ -37,7 +37,8 @@ class IlluminationBinarizer:
             return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     @staticmethod
-    def illumination_compensation(image: ndarray, as_bin=False, upper_value=255, c:float=0.3, bl:int=260, debug=False):
+    def illumination_compensation(image: ndarray, as_bin=False, upper_value=255, c:float=0.3, bl:int=260, iters=1,
+        debug=False):
         """Computes the illumination-compensated image for the given image.
         
         Parameters
@@ -49,6 +50,9 @@ class IlluminationBinarizer:
             bl: int, default 260.
                 Recommended values: [200..300]
                                 
+            iters: int, default 1.
+                Number of iterations to run. Only works if debug is set to False.
+
             debug: bool, default False
                 If True, runs Numba-compiled as usual Python functions
         Returns
@@ -74,26 +78,28 @@ class IlluminationBinarizer:
             else:
                 return result
         else:
-            # 1. Enhance contrast
-            cei = IlluminationBinarizer.enhance_contrast(image, gray, c)
+            result = image
+            for _ in iters:
+                # 1. Enhance contrast
+                cei = IlluminationBinarizer.enhance_contrast(result, gray, c)
 
-            # 2. Edge detection
-            edges = IlluminationBinarizer.detect_edges(gray)
+                # 2. Edge detection
+                edges = IlluminationBinarizer.detect_edges(gray)
 
-            # 3. Locate text
-            erosion = IlluminationBinarizer.locate_text(cei, edges)
+                # 3. Locate text
+                erosion = IlluminationBinarizer.locate_text(cei, edges)
 
-            # 4. Estimate lightness distribution
-            compute_mat = np.array(cei)
-            IlluminationBinarizer.estimate_lightness_distr(compute_mat, height, width, erosion, cei)
+                # 4. Estimate lightness distribution
+                compute_mat = np.array(cei)
+                IlluminationBinarizer.estimate_lightness_distr(compute_mat, height, width, erosion, cei)
 
-            mean_filter = 1 / 121 * np.ones((11,11), np.uint8)
-            ldi = cv2.filter2D(
-                IlluminationBinarizer.minmax_scale(compute_mat), -1, mean_filter
-            )
+                mean_filter = 1 / 121 * np.ones((11,11), np.uint8)
+                ldi = cv2.filter2D(
+                    IlluminationBinarizer.minmax_scale(compute_mat), -1, mean_filter
+                )
 
-            # 5. Compute result
-            result = IlluminationBinarizer.compute_result(cei, erosion, ldi, bl).astype(np.uint8)
+                # 5. Compute result
+                result = IlluminationBinarizer.compute_result(cei, erosion, ldi, bl).astype(np.uint8)
 
             if as_bin:
                 thresh = cv2.adaptiveThreshold(result, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)

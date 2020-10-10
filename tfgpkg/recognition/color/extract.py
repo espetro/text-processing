@@ -1,6 +1,8 @@
 from sklearn.preprocessing import LabelEncoder
-from .palette import ColorThief
 from PIL import Image
+
+from .palette import ColorThief
+from .group import ColorGroup
 
 import numpy as np
 import numbers
@@ -18,13 +20,13 @@ class ColorExtractor:
 
     Parameters
     ----------
-        image: ndarray of shape (X,Y) in RGB mode
+        image: ndarray of shape (X, Y, 3) in RGB mode
     """
     def __init__(self, image):
         if not issubclass(image.dtype.type, numbers.Integral):
             self.image = Image.fromarray((image * 255.).astype(np.uint8))
-
-        self.image = Image.fromarray(image)
+        else:
+            self.image = Image.fromarray(image)
         
     def palette(self, num_colors=3, precise=True, preprocess=True):
         quality = {True: 1, False: 8}.get(precise)
@@ -40,6 +42,7 @@ def image_loader(fpath, source_dir, target_size=(150,150)):
     image = cv2.cvtColor(cv2.imread(f"{source_dir}/{fpath}.png"), cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, target_size, cv2.INTER_CUBIC)
     return HighlightDetector.preprocess(image)
+
 
 if __name__ == "__main__":
     # data is a dataframe in style of IAM dataset with row

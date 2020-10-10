@@ -1,0 +1,1 @@
+# useful to make it searchable by 'pkg_resources'

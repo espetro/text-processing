@@ -5,9 +5,9 @@ try:
     # jamspell requires a specific installation (along with C++'s Swig 3.0)
     from jamspell import TSpellCorrector
 except ModuleNotFoundError:
-    from spellchecker import SpellChecker
+    from spellchecker import SpellChecker as TSpellCorrector
 
-import importlib_resources as pkg_resources  # backport of core 3.7 library
+import pkg_resources
 
 DetectorFactory.seed = 123  # ensure consistent results across multiple runs
 
@@ -20,9 +20,9 @@ class TextChecker:
         https://github.com/bakwc/JamSpell.git (linux / mac build)
     """
     MODEL_PATHS = {
-        "en": str(pkg_resources.files("recognition.data").joinpath("en.bin")),
-        "es": str(pkg_resources.files("recognition.data").joinpath("es.bin")),
-        "fr": str(pkg_resources.files("recognition.data").joinpath("fr.bin"))
+        "en": pkg_resources.resource_filename("tfgpkg.recognition.data", "en.bin"),
+        "es": pkg_resources.resource_filename("tfgpkg.recognition.data", "es.bin"),
+        "fr": pkg_resources.resource_filename("tfgpkg.recognition.data", "fr.bin")
     }
 
     def __init__(self, lines: List[str]):

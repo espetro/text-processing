@@ -33,7 +33,7 @@ setup(
         "pandas",
         "tqdm",
         "scikit-image",
-        "scikit-learn",
+        "scikit-learn == 0.22.2",
         "importlib_resources",
         "keras_octave_conv",
         # "mxnet",

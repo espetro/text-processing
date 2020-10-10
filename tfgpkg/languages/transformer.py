@@ -1,13 +1,15 @@
-import sys
-import codecs
-
 from antlr4 import InputStream, FileStream, CommonTokenStream, ParseTreeWalker
-from tfgpkg.languages.htmlColor import HTMLMinidownColorListener
-from tfgpkg.languages.MinidownColorLexer import MinidownColorLexer
-from tfgpkg.languages.MinidownColorParser import MinidownColorParser
 from antlr4.error.ErrorListener import ErrorListener
 from tempfile import NamedTemporaryFile
+from typing import List, Tuple
 from time import time
+
+from tfgpkg.languages.MinidownColorParser import MinidownColorParser
+from tfgpkg.languages.MinidownColorLexer import MinidownColorLexer
+from tfgpkg.languages.htmlColor import HTMLMinidownColorListener
+
+import codecs
+import sys
 
 
 class ExceptionListener(ErrorListener):
@@ -66,6 +68,37 @@ class LanguageTransformer:
 
         if output_file is None:
             f.close()
+
+
+    @staticmethod
+    def collect_word_color(color_input: List[Tuple[str, str, str, bool]], text_input: List[str]) -> str:
+        """
+        Collect the text input and color input and build a list of tuples (word, font color, bg color).
+        
+        The text input consists of a list of word predictions, and the color input consists of a list of tuples
+        (color1, color2, ..., class), with the most predominant K colors and a class label (highlighted or not).
+        Usually, the most predominant color belongs to the background. If the word is not highlighted, then the 2nd most
+        predominant color belongs to the font, otherwise it is the 3rd.
+
+        This method outputs a string where each resulting tuple is formatted as:
+        '(' WORD ' , ' FONT_COLOR ' , ' BG_COLOR ')'
+        
+        Please note the whitespaces.
+        """
+        if len(color_input) != len(text_input):
+            raise ValueError("Expected both the text and color input lists to have the same length.")
+
+        result = ""
+        for (color1, color2, color3, is_highlighted), word in zip(text_input, color_input):
+            bg_color, font_color = color1, color2
+
+            if is_highlighted:
+                bg_color, font_color = color1, color3
+
+            result += f"({word} , {font_color} , {bg_color}) "
+
+        return result.strip()  # remope the trailing whitespaces
+
 
 if __name__ == "__main__":
     listener = HTMLMinidownColorListener

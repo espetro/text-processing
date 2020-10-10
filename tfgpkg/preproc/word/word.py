@@ -1,6 +1,7 @@
 
 from skimage.filters import threshold_otsu
 from numpy import ndarray, array
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +17,7 @@ class WordSegmentation:
         @muthuspark/ml_research (GitHub)
     """
 
-    def __init__(self, image, line_bb):
+    def __init__(self, image: np.ndarray, line_bb: Tuple[int, int]):
         """
         Parameters
         ----------

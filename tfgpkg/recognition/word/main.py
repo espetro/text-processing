@@ -12,13 +12,19 @@ from os.path import expanduser
 from typing import List
 from enum import Enum
 
-import os
-import numpy as np
-import editdistance
-import tensorflow as tf
-import tensorflow.keras as keras
 import tensorflow.keras.backend as K
-import importlib_resources as pkg_resources
+import tensorflow.keras as keras
+import tensorflow as tf
+import editdistance
+import numpy as np
+import sys
+import os
+
+if sys.version_info.minor < 7:
+    import importlib_resources as pkg_resources
+elif sys.version_info.minor >= 7:
+    import pkg_resources
+
 
 class Arch(Enum):
     """
@@ -80,7 +86,7 @@ class RecognitionNet:
     """
     
     # pretrained model
-    MODEL_PATH = "" # pkg_resources.files("recognition.data").joinpath("text_weights/crnn_model_1e_weights.ckpt")
+    MODEL_PATH = pkg_resources.resource_filename("tfgpkg.recognition.data", "crnn_model_1e_weights.ckpt")
 
     ASCII_CHAR = " !\"#$%&'()*+,-.0123456789:;<>@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     LATIN_CHAR = " !\"#$%&'()*+,-.0123456789:;<>@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáÁéÉíÍóÓúÚëËïÏüÜñÑçÇâÂêÊîÎôÔûÛàÀèÈùÙ"
@@ -107,7 +113,7 @@ class RecognitionNet:
 
         self.model = self._build_model(optimizer, arch)
 
-    def load_chkpt(self, fpath: str=None):
+    def load_chkpt(self, fpath: str = None):
         """ Load a model with checkpoint file."""
         fpath = fpath or str(RecognitionNet.MODEL_PATH)
         self.model.load_weights(fpath)
