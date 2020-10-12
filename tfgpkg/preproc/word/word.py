@@ -1,5 +1,6 @@
 
 from skimage.filters import threshold_otsu
+from itertools import chain
 from numpy import ndarray, array
 from typing import Tuple
 
@@ -30,8 +31,6 @@ class WordSegmentation:
         self.height, self.width = image.shape[:2]
         self.lstart, self.lend = line_bb
 
-        self.words = []
-
         # Compute the vertical projection of the image
         thresh = threshold_otsu(image)
         binary = image > thresh
@@ -46,9 +45,16 @@ class WordSegmentation:
         """
         bbs = WordSegmentation.get_word_boxes(self.image, self.proj, self.height)
 
-        self.words = ((self.image[:, ymin:ymax], (self.lstart, ymin, self.lend, ymax)) for (ymin, ymax) in bbs)
-        self.words = [(word, params) for word, params in self.words if np.count_nonzero(word) != np.size(word)]  # remove all-white images
-        return self.words
+        words = (self.image[:, ymin:ymax] for (ymin, ymax) in bbs)
+        words = [wrd for wrd in words if np.count_nonzero(wrd) != np.size(wrd)]  # remove all-white images
+
+        coords = [(self.lstart, ymin, self.lend, ymax) for (ymin, ymax) in bbs]
+
+        return words, coords
+
+    @staticmethod
+    def flatten_word_list(word_list):
+        return list(chain.from_iterable(word_list))
 
     def plot_projection(self):
         plt.figure()

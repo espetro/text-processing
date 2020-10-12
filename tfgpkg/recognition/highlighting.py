@@ -9,8 +9,11 @@ from ..preproc.word import Quantize
 import matplotlib.pyplot as plt
 import skimage.exposure as exp
 import pkg_resources
-import numpy as np
+import numpy as np 
+import warnings
 import cv2
+
+warnings.simplefilter("ignore", category=DeprecationWarning)
 
 class HighlightDetector:
     """A class"""

@@ -59,6 +59,9 @@ class IlluminationBinarizer:
         -------
             2D numpy array, the binarized result image
         """
+        if not isinstance(iters, int) or iters < 1:
+            raise ValueError("The number of iterations must be greater than 1")
+        
         gray = IlluminationBinarizer.to_grayscale(image, from_rgb=True).astype(np.float32)
         height, width = gray.shape[:2]
 
@@ -79,7 +82,7 @@ class IlluminationBinarizer:
                 return result
         else:
             result = image
-            for _ in iters:
+            for _ in range(iters):
                 # 1. Enhance contrast
                 cei = IlluminationBinarizer.enhance_contrast(result, gray, c)
 

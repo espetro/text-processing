@@ -1,7 +1,11 @@
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.cluster import KMeans
 from sklearn.utils import shuffle
 
 import numpy as np
+import warnings
+
+warnings.simplefilter("ignore", category=ConvergenceWarning)
 
 class Quantize:
     """

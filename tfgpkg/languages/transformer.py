@@ -71,7 +71,7 @@ class LanguageTransformer:
 
 
     @staticmethod
-    def collect_word_color(color_input: List[Tuple[str, str, str, bool]], text_input: List[str]) -> str:
+    def collect_word_color(color_input: List[Tuple[str, str, str]], pred_input: List[bool], text_input: List[str]) -> str:
         """
         Collect the text input and color input and build a list of tuples (word, font color, bg color).
         
@@ -89,11 +89,14 @@ class LanguageTransformer:
             raise ValueError("Expected both the text and color input lists to have the same length.")
 
         result = ""
-        for (color1, color2, color3, is_highlighted), word in zip(text_input, color_input):
+        for (color1, color2, color3), is_highlighted, word in zip(color_input, pred_input, text_input):
             bg_color, font_color = color1, color2
 
             if is_highlighted:
                 bg_color, font_color = color1, color3
+
+            if bg_color == "white":
+                bg_color = None
 
             result += f"({word} , {font_color} , {bg_color}) "
 

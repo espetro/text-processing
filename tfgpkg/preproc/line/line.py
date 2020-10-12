@@ -1,9 +1,11 @@
-from tfgpkg.preproc.line.projection import *
 from numba.core.errors import NumbaPendingDeprecationWarning
-from numpy import ndarray
+from numpy import ndarray as NumpyArray
+from numbers import Integral
 from tqdm import tqdm
 from enum import Enum
-from typing import *
+from typing import List, Tuple
+
+from tfgpkg.preproc.line.projection import *
 
 import numpy as np
 import numba as nb
@@ -124,7 +126,7 @@ class LineSegmentation:
     def rescale(image, scale_factor):
         return cv2.resize(image, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
 
-    def find_lines(self, debug=False):
+    def find_lines(self, debug=False, strip_whites=True, buffer_lines: int = 10, whitest_range: int = 10):
         """Return a list of cut images's path plus their bounding boxes"""
         self.pre_process_img()
         self.find_contours(debug)
@@ -133,8 +135,6 @@ class LineSegmentation:
         # Get initial lines
         self.get_initial_lines(debug)
 
-        # self.save_image_with_lines(self.output_path + "/Initial_Lines.jpg")
-
         # Get initial line regions
         self.generate_regions(debug)
         # repair all initial lines and generate the final line region
@@ -142,10 +142,8 @@ class LineSegmentation:
         # Generate the final line regions
         self.generate_regions(debug)
 
-        # save image drawn lines
-        # self.save_image_with_lines(self.output_path + "/Final_Lines.bmp")
-
-        return self.get_regions()
+        _, width = self.img.shape[:2]
+        return self.get_regions(strip_whites, width, buffer_lines, whitest_range)
 
     @staticmethod
     def sieve():
@@ -475,10 +473,68 @@ class LineSegmentation:
                         break  # Contour found
                 i += 1
 
-    def get_regions(self):
-        return [(region.region, (region.start, region.end)) for region in self.lines_region]
+    def get_regions(self, strip_whites: bool, image_width: int, buffer_lines: int = 10, whitest_range: int = 10):
+        """If 'strip_whites' is set to True, all empty space from a line image will be removed"""
+        lines: NumpyArray = [region.region for region in self.lines_region]
+        coords: NumpyArray = [(region.start, region.end) for region in self.lines_region]
+
+        if strip_whites:
+            if not issubclass(lines[0].dtype.type, Integral):
+                raise Exception("Expected line images to be in the range 0..255")
+
+            new_lines, new_coords = [], []
+
+            for line_image, (start, end) in zip(lines, coords):
+                hproj = np.sum((line_image / 255), axis=1).astype(np.int32)  # horizontal projection
+                text_hlines = np.where(hproj < (image_width - whitest_range))[0]
+
+                stripped_line, stripped_coord = self._resize_line(line_image, text_hlines, buffer_lines, start, end)
+
+                new_lines.append(stripped_line)
+                new_coords.append(stripped_coord)
+
+            lines = new_lines
+            coords = new_coords
+
+        return lines, np.array(coords)
+                
+    
+    def _resize_line(self, line_image, text_hlines, num_buffer_lines, start, end):
+        """"""
+        lower_limit, upper_limit = text_hlines[0] - num_buffer_lines, text_hlines[-1] + num_buffer_lines
+        image_height, _ = self.img.shape[:2]
+        line_height, _ = line_image.shape[:2]
+
+        # start, end are the start & end of the line w.r.t. the image
+        # text_hlines[0], text_hlines[-1] are the start & end of the line w.r.t. itself
+
+        new_start, new_end = start, end
+        pre_whites, post_whites = [], []
+
+        if start == 0:
+            new_end = text_hlines[-1] + num_buffer_lines
+            post_whites = np.arange(text_hlines[-1] + 1, new_end)
+
+        elif end == image_height:
+            new_start = text_hlines[0] - num_buffer_lines
+            pre_whites = np.arange(new_start, text_hlines[0] - 1)
+
+        elif (lower_limit < 0) or (upper_limit > image_height):
+            raise Exception(f"New limits {lower_limit}, {upper_limit} are not in the image range [0..{image_height}]")
+        elif (upper_limit > line_height):
+            raise Exception(f"New limits {lower_limit}, {upper_limit} are not in the line range [0..{line_height}]")
+        else:
+            new_start = text_hlines[0] - num_buffer_lines
+            new_end = text_hlines[-1] + num_buffer_lines
+
+            pre_whites = np.arange(new_start, text_hlines[0] - 1)
+            post_whites = np.arange(text_hlines[-1] + 1, new_end)
+        
+        pos = np.array([*pre_whites, *text_hlines, *post_whites])
+        return line_image[pos, :], (new_start, new_end)
 
     def save_image_with_lines(self, path):
+        """"""
         img_clone = self.img.copy()
 
         for line in self.initial_lines:

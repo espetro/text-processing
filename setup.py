@@ -14,7 +14,7 @@ from setuptools import setup
 
 setup(
     name="tfgpkg",
-    version="0.0.2",
+    version="0.0.3",
     url="https://github.com/espetro/text-processing",
     license="BSD",
     author="Quim Terrasa",
@@ -36,8 +36,7 @@ setup(
         "scikit-learn == 0.22.2",
         "importlib_resources",
         "keras_octave_conv",
-        # "mxnet",
-        # "jamspell",
+        "autocorrect == 2.1.2",
         "pyspellchecker",
         "langdetect"
     ],

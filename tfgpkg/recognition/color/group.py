@@ -37,7 +37,7 @@ class ColorGroup:
             str, predicted color class
         """
         if color.shape != (1,3):
-            raise ValueError(f"{repr(color)} must be of shape (1,3)")
+            raise ValueError(f"{repr(color)} must be of shape (1,3) ", color)
         return self.model.predict(color)[0]
 
     @staticmethod
