@@ -2,6 +2,11 @@
 .vscode
 .directory
 
+# Intermediate files in './playground/'
+trained_models/
+training_logs/
+demo_checkpoint*
+
 # ANTLR4-specific ignores
 .antlr
 tmp/
