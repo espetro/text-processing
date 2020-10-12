@@ -6,6 +6,8 @@ from .base import BaseModel
 from .depthwise import DepthwiseModel
 from .octave import OctaveModel
 from .gated import GatedModel
+from .baseline import BaselineModel
+
 from .metrics import cer, wer
 
 from os.path import expanduser
@@ -113,10 +115,18 @@ class RecognitionNet:
 
         self.model = self._build_model(optimizer, arch)
 
-    def load_chkpt(self, fpath: str = None):
-        """ Load a model with checkpoint file."""
-        fpath = fpath or str(RecognitionNet.MODEL_PATH)
+    def load_weights(self, fpath: str = None):
+        """ Load model weights from a checkpoint file."""
+        fpath = fpath or str(RecognitionNet.TRAINED_WEIGHTS_PATH)
         self.model.load_weights(fpath)
+    
+    @staticmethod
+    def load_model(fpath: str = None, input_size: Tuple[int, int] = (192, 48)):
+        """ Load a model from a checkpoint file."""
+        fpath = fpath or str(RecognitionNet.TRAINED_MODEL_PATH)
+        
+        net = RecognitionNet(".", input_size)
+        net.model = tf.keras.models.load_model(fpath, custom_objects={ "ctc_loss_lambda_func": BaseModel.ctc_loss_lambda_func })
            
     @staticmethod
     def compute_wer(true_labels: List[str], pred_labels: List[str]):
@@ -163,6 +173,8 @@ class RecognitionNet:
         """
         if arch is None:
             raise ValueError(f"Wrong architecture value {arch} (only Arch. Octave, Depthwise or Gated are available)")
+        elif arch is Arch.Baseline:
+            return BaselineModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Gated:
             return GatedModel(self.input_size, self.model_outputs, optimizer).get_model()
         elif arch is Arch.Octave:
@@ -248,6 +260,6 @@ class RecognitionNet:
 
 
 if __name__ == "__main__":
-    net = RecognitionNet(".")
-    net.load_chkpt()
+    net = RecognitionNet(".", input_size=(192, 48, 1))
+    net.load_model()
     net.summary()
