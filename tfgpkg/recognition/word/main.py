@@ -11,7 +11,7 @@ from .baseline import BaselineModel
 from .metrics import cer, wer
 
 from os.path import expanduser
-from typing import List
+from typing import List, Tuple
 from enum import Enum
 
 import tensorflow.keras.backend as K
@@ -37,6 +37,7 @@ class Arch(Enum):
     Octave = 1
     Depthwise = 2
     Gated = 3
+    Baseline = 4
 
 def set_callbacks(logdir, verbose=0, monitor="val_loss"):
     """Setup a list of Tensorflow Keras callbacks"""
@@ -127,6 +128,7 @@ class RecognitionNet:
         
         net = RecognitionNet(".", input_size)
         net.model = tf.keras.models.load_model(fpath, custom_objects={ "ctc_loss_lambda_func": BaseModel.ctc_loss_lambda_func })
+        return net
            
     @staticmethod
     def compute_wer(true_labels: List[str], pred_labels: List[str]):
@@ -239,14 +241,12 @@ class RecognitionNet:
         return (predicts, probabilities)
 
     @staticmethod
-    def preprocess(image, aspect_ratio=None, target_size=None):
+    def preprocess(image, aspect_ratio: float, target_size: Tuple[int, int]):
         """Preprocessing function for an image (integer np.array) in RGB mode.
 
         Source:
             recognition.DataUnpack.unpack_set method
         """
-        target_size = target_size or RecognitionNet.INPUT_SIZE  # defaults to (256, 64, 1)
-
         if target_size and aspect_ratio:
             image = DataUnpack.resize("", image, target_size, aspect_ratio)
         

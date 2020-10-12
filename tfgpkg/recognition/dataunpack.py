@@ -26,7 +26,7 @@ class DataUnpack:
             cv2.imwrite(fpath, image)
 
     @staticmethod
-    def resize(name, image: ndarray, target_size, aspect_ratio: float=None):
+    def resize(name, image: ndarray, target_size, aspect_ratio: float = None):
         """Resizes a grayscale image
 
         image: numpy ndarray with shape (height, width) and 0 channels
