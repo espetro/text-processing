@@ -22,7 +22,7 @@ setup(
     description="A package for keeping useful modules that I used in my bachelor thesis.",
     py_modules=["tfgpkg"],
     install_requires=[
-        "tensorflow == 2.2.0",
+        "tensorflow == 2.7.2",
         "numpy",
         "editdistance",
         "opencv-python",
